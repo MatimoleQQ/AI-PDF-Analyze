@@ -58,7 +58,7 @@ The system extracts and processes document data, then uses an AI model to genera
 ---
 ### Screenshots
 
-![Main page](screenshots/AI_docs.jpg)
+![Main page](screenshots/AI_Docs.jpg)
 ---
 
 ## 🧩 Architecture
