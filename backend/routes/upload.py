@@ -1,37 +1,31 @@
-import os
-
-from fastapi import APIRouter
-from fastapi import UploadFile
-from fastapi import File
-
-from backend.services.pdf_service import extract_text_from_pdf
-from backend.services.rag_service import save_document
+from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter
+from io import BytesIO
 
 router = APIRouter()
 
-UPLOAD_DIR = "uploads"
-
-os.makedirs(
-    UPLOAD_DIR,
-    exist_ok=True
-)
-
-
 @router.post("/upload")
-async def upload_pdf(
-        file: UploadFile = File(...)
-):
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        # 1. READ FILE
+        content = await file.read()
 
-    file_path = f"{UPLOAD_DIR}/{file.filename}"
+        if not content:
+            raise HTTPException(status_code=400, detail="Empty file")
 
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
+        # 2. FIX: convert bytes → file-like object
+        file_stream = BytesIO(content)
 
-    text = extract_text_from_pdf(file_path)
+        # 3. DEBUG
+        print("filename:", file.filename)
+        print("size:", len(content))
 
-    chunks = save_document(text)
 
-    return {
-        "message": "PDF uploaded",
-        "chunks": chunks
-    }
+        return {
+            "status": "ok",
+            "filename": file.filename,
+            "size": len(content)
+        }
+
+    except Exception as e:
+        print("ERROR:", e)
+        raise HTTPException(status_code=500, detail=str(e))
